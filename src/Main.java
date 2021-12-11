@@ -23,6 +23,7 @@ public class Main {
 
   private static void mainMenu() {
     Scanner scanner = new Scanner(System.in);
+    PagingAlgorithms pager;
 
     while (flag) {
       System.out.println("\n*****************************************\n" +
@@ -47,34 +48,40 @@ public class Main {
             break;
           case 1:
             System.out.println("1 entered. Enter Reference String");
-            readString(scanner.next());
+            readString();
             break;
           case 2:
             System.out.println("2 entered. Generate reference String\n" + "Enter length of string: ");
             generateString(Integer.parseInt(scanner.next()));
-            System.out.println(pageBuffer.toString());
+            for (int i = 0; i < pageBuffer.capacity(); i++) {
+              System.out.print(pageBuffer.get(i) + " ");
+            }
             break;
           case 3:
             System.out.println("3 entered. Displaying Current reference string");
-            System.out.println(pageBuffer.toString());
+            for (int i = 0; i < pageBuffer.capacity(); i++) {
+              System.out.print(pageBuffer.get(i) + " ");
+            }
             break;
           case 4:
             System.out.println("4 entered. Simulating FIFO");
-            PagingAlgorithms pager = new PagingAlgorithms(pageBuffer);
+            pager = new PagingAlgorithms(pageBuffer);
             pager.fifo();
             break;
           case 5:
             System.out.println("5 entered. Simulating OPT");
-            PagingAlgorithms pager = new PagingAlgorithms(pageBuffer);
+            pager = new PagingAlgorithms(pageBuffer);
             pager.optimum();
             break;
           case 6:
-            System.out.println("6 entered. Encryption");
-            fileSystem.XOREncrypt();
+            System.out.println("6 entered. Simulating LRU");
+            pager = new PagingAlgorithms(pageBuffer);
+            pager.leastRecentlyUsed();
             break;
           case 7:
-            System.out.println("7 entered. Decryption");
-            fileSystem.XORDecrypt();
+            System.out.println("7 entered. Simulating LFU");
+            pager = new PagingAlgorithms(pageBuffer);
+            pager.leastFrequentlyUsed();
             break;
           default:
             System.out.println("Invalid selection. Please select 0-7");
@@ -86,9 +93,15 @@ public class Main {
     }
   }
 
-  private static void readString(String next) {
-    pageBuffer.clear();
-    String[] strings = next.split(" ");
+  private static void readString() {
+    Scanner scanner = new Scanner(System.in);
+
+    String input = scanner.nextLine();
+
+    if (pageBuffer != null) {
+      pageBuffer.clear();
+    }
+    String[] strings = input.split(" ");
     int[] pages = new int[strings.length];
     for (int i = 0; i < strings.length; i++) {
       pages[i] = Integer.parseInt(strings[i]);
@@ -97,7 +110,9 @@ public class Main {
   }
 
   private static void generateString(int length) {
-    pageBuffer.clear();
+    if (pageBuffer != null) {
+      pageBuffer.clear();
+    }
     Random random = new Random();
     pageBuffer = IntBuffer.allocate(length);
     for (int i = 0; i < length; i++) {

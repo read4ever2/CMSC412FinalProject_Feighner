@@ -10,7 +10,9 @@ import java.nio.IntBuffer;
 
 public class PagingAlgorithms {
 
-  private IntBuffer pageBuffer;
+  private static final int NUMBEROFFRAMES = 8;
+  private final IntBuffer pageBuffer;
+  int[][] displayArray;
 
   public PagingAlgorithms(IntBuffer pageBuffer) {
     this.pageBuffer = pageBuffer;
@@ -18,11 +20,43 @@ public class PagingAlgorithms {
 
   public void fifo() {
     System.out.println("FIFO");
-    System.out.println(pageBuffer.toString());
+    for (int i = 0; i < pageBuffer.capacity(); i++) {
+      System.out.print(pageBuffer.get(i) + " ");
+    }
+
+    displayArray = new int[pageBuffer.capacity()][NUMBEROFFRAMES];
+
+    for (int i = 0; i < pageBuffer.capacity(); i++) {
+
+    }
   }
 
   public void optimum() {
     System.out.println("Optimum");
-    System.out.println(pageBuffer.toString());
+    for (int i = 0; i < pageBuffer.capacity(); i++) {
+      System.out.print(pageBuffer.get(i) + " ");
+    }
+  }
+
+  public void leastRecentlyUsed() {
+    System.out.println("Least Recently Used");
+    for (int i = 0; i < pageBuffer.capacity(); i++) {
+      System.out.print(pageBuffer.get(i) + " ");
+    }
+  }
+
+  public void leastFrequentlyUsed() {
+    System.out.println("Least Frequently Used");
+    for (int i = 0; i < pageBuffer.capacity(); i++) {
+      System.out.print(pageBuffer.get(i) + " ");
+    }
+  }
+
+  private void printTable(int[][] displayArray, String[] faultArray, int[] victimArray) {
+
+
+    for (int i = 0; i < 50; i++) {
+      System.out.println();
+    }
   }
 }
