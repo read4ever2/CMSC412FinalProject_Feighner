@@ -13,7 +13,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class PagingAlgorithms {
 
-  private static final int NUMBEROFFRAMES = 8;
+  private static final int NUMBEROFFRAMES = 5;
   private final IntBuffer pageBuffer;
   String[][] displayArray;
   String[] faultArray;
@@ -26,16 +26,13 @@ public class PagingAlgorithms {
   }
 
   public void fifo() {
-    System.out.println("FIFO");
-    for (int i = 0; i < pageBuffer.capacity(); i++) {
-      System.out.print(pageBuffer.get(i) + " ");
-    }
 
+    // Create arrays for outputs
     displayArray = new String[pageBuffer.capacity()][NUMBEROFFRAMES];
     faultArray = new String[pageBuffer.capacity()];
     victimArray = new String[pageBuffer.capacity()];
 
-    // initialize arrays to empty spaces
+    // initialize output arrays to empty spaces
     for (int i = 0; i < pageBuffer.capacity(); i++) {
       for (int j = 0; j < NUMBEROFFRAMES; j++) {
         displayArray[i][j] = " ";
@@ -44,37 +41,63 @@ public class PagingAlgorithms {
       victimArray[i] = " ";
     }
 
-
+    // Create queue for pages
     ArrayBlockingQueue<Integer> fifoQueue = new ArrayBlockingQueue<>(NUMBEROFFRAMES);
 
-    int pageFaultIndex = 0;
+    int pageFaultIndex = -1;
 
+    // For each page in the reference string
     for (int i = 0; i < pageBuffer.capacity(); i++) {
 
+      // check to see if new page is already in queue
       if (fifoQueue.contains(pageBuffer.get(i))) {
-        faultArray[i] = " ";
-        victimArray[i] = " ";
+
+        // If page hit
+        faultArray[i] = " "; // no page fault
+        victimArray[i] = " "; // no victim page
+        displayArray[i] = displayArray[i - 1]; // array of pages stays same as prior
       } else {
+
+        // page fault
         faultArray[i] = "F";
         pageFaults++;
 
-
+        // if page queue is full
         if (fifoQueue.size() == NUMBEROFFRAMES) {
+
+          // victim page from queue
+          Integer victim = fifoQueue.remove();
+
+          // find victim page frame number
           for (int j = 0; j < currentPages.length; j++) {
-            if (Objects.equals(fifoQueue.peek(), currentPages[j])) {
+            if (currentPages[j].equals(victim)) {
               pageFaultIndex = j;
               break;
             }
           }
-          victimArray[i] = String.valueOf(currentPages[pageFaultIndex]);
+
+          // Victim page to victim array
+          victimArray[i] = String.valueOf(victim);
+
+          // Add new page vacated frame number
           currentPages[pageFaultIndex] = pageBuffer.get(i);
 
+          // add page to end of queue
           try {
             fifoQueue.put(pageBuffer.get(i));
           } catch (InterruptedException e) {
             e.printStackTrace();
           }
-        } else {
+        } else { // queue not full
+
+          // add page to end of queue
+          try {
+            fifoQueue.put(pageBuffer.get(i));
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+
+          // Add new page vacated frame number
           for (int j = 0; j < currentPages.length; j++) {
             if (currentPages[j] == null) {
               currentPages[j] = pageBuffer.get(i);
@@ -82,26 +105,41 @@ public class PagingAlgorithms {
             }
           }
         }
+        // copy current page frames to display array
         for (int j = 0; j < displayArray[i].length; j++) {
           displayArray[i][j] = String.valueOf(currentPages[j]);
         }
       }
 
-
+      // Display output table
       printTable(displayArray, faultArray, victimArray);
-      System.out.print("\nPress Any key to Continue");
+      System.out.print("\nPress Enter key to continue");
       Scanner scanner = new Scanner(System.in);
       scanner.nextLine();
     }
-    System.out.println("Total Page Faults: " + pageFaults);
 
+    double hitRatio = (double) ((pageBuffer.capacity() - pageFaults) / pageBuffer.capacity()) * 100;
+
+    System.out.println("Total Page Faults: " + pageFaults);
+    System.out.println("Hit ratio: " + hitRatio + " %");
   }
 
   public void optimum() {
-    System.out.println("Optimum");
+
+    // Create arrays for outputs
+    displayArray = new String[pageBuffer.capacity()][NUMBEROFFRAMES];
+    faultArray = new String[pageBuffer.capacity()];
+    victimArray = new String[pageBuffer.capacity()];
+
+    // initialize output arrays to empty spaces
     for (int i = 0; i < pageBuffer.capacity(); i++) {
-      System.out.print(pageBuffer.get(i) + " ");
+      for (int j = 0; j < NUMBEROFFRAMES; j++) {
+        displayArray[i][j] = " ";
+      }
+      faultArray[i] = " ";
+      victimArray[i] = " ";
     }
+
   }
 
   public void leastRecentlyUsed() {
