@@ -1,4 +1,5 @@
 import java.nio.IntBuffer;
+import java.util.concurrent.ArrayBlockingQueue;
 
 /**
  * Filename: PagingAlgorithms.java
@@ -13,6 +14,8 @@ public class PagingAlgorithms {
   private static final int NUMBEROFFRAMES = 8;
   private final IntBuffer pageBuffer;
   int[][] displayArray;
+  String[] faultArray;
+  int[] victimArray;
 
   public PagingAlgorithms(IntBuffer pageBuffer) {
     this.pageBuffer = pageBuffer;
@@ -25,6 +28,8 @@ public class PagingAlgorithms {
     }
 
     displayArray = new int[pageBuffer.capacity()][NUMBEROFFRAMES];
+
+    ArrayBlockingQueue<Integer> currentPages = new ArrayBlockingQueue<>(NUMBEROFFRAMES);
 
     for (int i = 0; i < pageBuffer.capacity(); i++) {
 
