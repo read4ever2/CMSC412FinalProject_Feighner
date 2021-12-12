@@ -216,6 +216,7 @@ public class PagingAlgorithms {
 
           // add page to end of queue
           LRUQueue.add(pageBuffer.get(i));
+
         } else { // queue not full
 
           // add page to end of queue
@@ -242,7 +243,7 @@ public class PagingAlgorithms {
       scanner.nextLine();
     }
 
-    double hitRatio = (double) ((pageBuffer.capacity() - pageFaults) / pageBuffer.capacity()) * 100;
+    double hitRatio = (((double) (pageBuffer.capacity() - pageFaults) / (double) pageBuffer.capacity()) * 100);
 
     System.out.println("Total Page Faults: " + pageFaults);
     System.out.println("Hit ratio: " + hitRatio + " %");
@@ -264,6 +265,12 @@ public class PagingAlgorithms {
     System.out.print("Reference String\t");
     for (int i = 0; i < pageBuffer.capacity(); i++) {
       System.out.print(pageBuffer.get(i) + "\t");
+    }
+    System.out.println();
+
+    System.out.print("--------------------");
+    for (int i = 0; i < pageBuffer.capacity(); i++) {
+      System.out.print("----");
     }
     System.out.println();
 
@@ -291,4 +298,5 @@ public class PagingAlgorithms {
     }
     System.out.println();
   }
+
 }
