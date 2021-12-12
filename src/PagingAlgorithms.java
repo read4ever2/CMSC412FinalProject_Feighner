@@ -168,16 +168,17 @@ public class PagingAlgorithms {
 
           // find optimum page to replace, longest until next use
           int victim = -1, farthest = i + 1, victimFrame = -1;
-          for (int j = 0; j < currentPages.length; j++) {
-            for (int k = i; k < pageBuffer.capacity(); k++) {
-              if (currentPages[j] == pageBuffer.get(k)) {
-                if (k > farthest) {
+          for (int j = 0; j < currentPages.length; j++) { // for each current page
+            for (int k = i; k < pageBuffer.capacity(); k++) { // for the remaining input pages
+              if (currentPages[j] == pageBuffer.get(k)) { // does the current page match a future page
+                if (k > farthest) { // if the page is question is farther out than the previous farthest, replace it
                   farthest = k;
                   victim = pageBuffer.get(k);
                   victimFrame = j;
                 }
                 break;
               }
+              // TODO figure out to how return page that is not called future, i.e. farthest call is end of string
             }
           }
           victimArray[i] = String.valueOf(victim);
