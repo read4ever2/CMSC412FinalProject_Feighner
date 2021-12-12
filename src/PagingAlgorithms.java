@@ -167,14 +167,16 @@ public class PagingAlgorithms {
         if (currentPageSet.size() == numberOfFrames) {
 
           // find optimum page to replace, longest until next use
-          int victim = -1, farthest = i + 1;
+          int victim = -1, farthest = i + 1, victimFrame = -1;
           for (int j = 0; j < currentPages.length; j++) {
             for (int k = i; k < pageBuffer.capacity(); k++) {
               if (currentPages[j] == pageBuffer.get(k)) {
                 if (k > farthest) {
                   farthest = k;
-                  victim = j;
+                  victim = pageBuffer.get(k);
+                  victimFrame = j;
                 }
+                break;
               }
             }
           }
@@ -184,7 +186,7 @@ public class PagingAlgorithms {
           currentPageSet.remove(victim);
           currentPageSet.add(pageBuffer.get(i));
 
-          currentPages[victim] = pageBuffer.get(i);
+          currentPages[victimFrame] = pageBuffer.get(i);
 
         } else { // Frames not full
           currentPageSet.add(pageBuffer.get(i));
@@ -200,19 +202,18 @@ public class PagingAlgorithms {
         for (int j = 0; j < displayArray[i].length; j++) {
           displayArray[i][j] = String.valueOf(currentPages[j]);
         }
-        // Display output table
-        printTable(displayArray, faultArray, victimArray);
-        System.out.print("\nPress Enter key to continue");
-        Scanner scanner = new Scanner(System.in);
-        scanner.nextLine();
+
       }
-      double hitRatio = (((double) (pageBuffer.capacity() - pageFaults) / (double) pageBuffer.capacity()) * 100);
-
-      System.out.println("Total Page Faults: " + pageFaults);
-      System.out.println("Hit ratio: " + hitRatio + " %");
+      // Display output table
+      printTable(displayArray, faultArray, victimArray);
+      System.out.print("\nPress Enter key to continue");
+      Scanner scanner = new Scanner(System.in);
+      scanner.nextLine();
     }
+    double hitRatio = (((double) (pageBuffer.capacity() - pageFaults) / (double) pageBuffer.capacity()) * 100);
 
-
+    System.out.println("Total Page Faults: " + pageFaults);
+    System.out.println("Hit ratio: " + hitRatio + " %");
   }
 
   public void leastRecentlyUsed() {
