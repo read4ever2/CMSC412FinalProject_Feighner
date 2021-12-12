@@ -1,8 +1,5 @@
 import java.nio.IntBuffer;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
@@ -153,6 +150,49 @@ public class PagingAlgorithms {
     }
 
 
+    HashSet<Integer> currentPageSet = new HashSet<>(numberOfFrames);
+
+    // For each page in the reference string
+    for (int i = 0; i < pageBuffer.capacity(); i++) {
+      // Check to see if new page matches any current pages
+      if (currentPageSet.contains(pageBuffer.get(i))) {
+        // if page hit
+        faultArray[i] = " "; // no page fault
+        victimArray[i] = " "; // no victim page
+        displayArray[i] = displayArray[i - 1]; // array of pages stays same as prior
+      } else { // page fault
+        faultArray[i] = "F";
+        pageFaults++;
+        // if all frame are full
+        if (currentPageSet.size() == numberOfFrames) {
+
+        } else { // Frames not full
+          currentPageSet.add(pageBuffer.get(i));
+          // place page in first free frame
+          for (int j = 0; j < currentPages.length; j++) {
+            if (currentPages[j] == null) {
+              currentPages[j] = pageBuffer.get(i);
+              break;
+            }
+          }
+        }
+        // copy current page frames to display array
+        for (int j = 0; j < displayArray[i].length; j++) {
+          displayArray[i][j] = String.valueOf(currentPages[j]);
+        }
+        // Display output table
+        printTable(displayArray, faultArray, victimArray);
+        System.out.print("\nPress Enter key to continue");
+        Scanner scanner = new Scanner(System.in);
+        scanner.nextLine();
+      }
+      double hitRatio = (((double) (pageBuffer.capacity() - pageFaults) / (double) pageBuffer.capacity()) * 100);
+
+      System.out.println("Total Page Faults: " + pageFaults);
+      System.out.println("Hit ratio: " + hitRatio + " %");
+    }
+
+
   }
 
   public void leastRecentlyUsed() {
@@ -277,6 +317,7 @@ public class PagingAlgorithms {
       victimArray[i] = " ";
     }
 
+    // keep track of fifo order
     LinkedList<Integer> currentPageAge = new LinkedList<>();
     // Initialize map to keep track of page use count
     int mapSize = 10;
@@ -304,7 +345,7 @@ public class PagingAlgorithms {
         pageFaults++;
         // If all frames are full
         if (currentPageAge.size() == numberOfFrames) {
-          // find least frequently used frame
+          // find least frequently used frame, and fifo list position among ties
           int lru = Integer.MAX_VALUE, value = Integer.MIN_VALUE;
 
           int lruListPos = -1;
@@ -319,12 +360,14 @@ public class PagingAlgorithms {
           // Victim page to victim array
           victimArray[i] = String.valueOf(value);
 
+          // replace victim page with new page in frame
           int pageFaultFrameNum = -1;
           for (int j = 0; j < currentPages.length; j++) {
             if (currentPages[j] == value) {
               pageFaultFrameNum = j;
             }
           }
+          // remove victim frame from fifo tracking list
           currentPageAge.remove(lruListPos);
           currentPageAge.add(pageBuffer.get(i));
 
