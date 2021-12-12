@@ -1,4 +1,5 @@
 import java.nio.IntBuffer;
+import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -140,13 +141,111 @@ public class PagingAlgorithms {
       victimArray[i] = " ";
     }
 
+
   }
 
   public void leastRecentlyUsed() {
-    System.out.println("Least Recently Used");
+    // Create arrays for outputs
+    displayArray = new String[pageBuffer.capacity()][NUMBEROFFRAMES];
+    faultArray = new String[pageBuffer.capacity()];
+    victimArray = new String[pageBuffer.capacity()];
+
+    // initialize output arrays to empty spaces
     for (int i = 0; i < pageBuffer.capacity(); i++) {
-      System.out.print(pageBuffer.get(i) + " ");
+      for (int j = 0; j < NUMBEROFFRAMES; j++) {
+        displayArray[i][j] = " ";
+      }
+      faultArray[i] = " ";
+      victimArray[i] = " ";
     }
+
+    // Create queue for pages
+    LinkedList<Integer> LRUQueue = new LinkedList<>();
+
+    int pageFaultIndex = -1;
+
+    // For each page in the reference string
+    for (int i = 0; i < pageBuffer.capacity(); i++) {
+
+      // check to see if new page is already in queue
+      if (LRUQueue.contains(pageBuffer.get(i))) {
+
+        // If page hit
+        faultArray[i] = " "; // no page fault
+        victimArray[i] = " "; // no victim page
+        displayArray[i] = displayArray[i - 1]; // array of pages stays same as prior
+
+        int pageHitIndex = -1;
+
+        // find page hit queue position
+        for (int j = 0; j < LRUQueue.size(); j++) {
+          if (LRUQueue.get(j).equals(pageBuffer.get(i))) {
+            pageHitIndex = j;
+          }
+        }
+
+        // remove page from queue position and add to end
+        Integer requeue = LRUQueue.remove(pageHitIndex);
+        LRUQueue.add(requeue);
+
+      } else {
+
+        // page fault
+        faultArray[i] = "F";
+        pageFaults++;
+
+        // if page queue is full
+        if (LRUQueue.size() == NUMBEROFFRAMES) {
+
+          // victim page from queue
+          Integer victim = LRUQueue.remove();
+
+          // find victim page frame number
+          for (int j = 0; j < currentPages.length; j++) {
+            if (currentPages[j].equals(victim)) {
+              pageFaultIndex = j;
+              break;
+            }
+          }
+
+          // Victim page to victim array
+          victimArray[i] = String.valueOf(victim);
+
+          // Add new page vacated frame number
+          currentPages[pageFaultIndex] = pageBuffer.get(i);
+
+          // add page to end of queue
+          LRUQueue.add(pageBuffer.get(i));
+        } else { // queue not full
+
+          // add page to end of queue
+          LRUQueue.add(pageBuffer.get(i));
+
+          // Add new page vacated frame number
+          for (int j = 0; j < currentPages.length; j++) {
+            if (currentPages[j] == null) {
+              currentPages[j] = pageBuffer.get(i);
+              break;
+            }
+          }
+        }
+        // copy current page frames to display array
+        for (int j = 0; j < displayArray[i].length; j++) {
+          displayArray[i][j] = String.valueOf(currentPages[j]);
+        }
+      }
+
+      // Display output table
+      printTable(displayArray, faultArray, victimArray);
+      System.out.print("\nPress Enter key to continue");
+      Scanner scanner = new Scanner(System.in);
+      scanner.nextLine();
+    }
+
+    double hitRatio = (double) ((pageBuffer.capacity() - pageFaults) / pageBuffer.capacity()) * 100;
+
+    System.out.println("Total Page Faults: " + pageFaults);
+    System.out.println("Hit ratio: " + hitRatio + " %");
   }
 
   public void leastFrequentlyUsed() {
