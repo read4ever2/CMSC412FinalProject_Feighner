@@ -1,5 +1,8 @@
 import java.nio.IntBuffer;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Objects;
+import java.util.Scanner;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
@@ -12,28 +15,38 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class PagingAlgorithms {
 
-  private static final int NUMBEROFFRAMES = 5;
   private final IntBuffer pageBuffer;
   String[][] displayArray;
   String[] faultArray;
   String[] victimArray;
-  Integer[] currentPages = new Integer[NUMBEROFFRAMES];
+  Integer[] currentPages;
+  private int numberOfFrames;
   private int pageFaults = 0;
 
   public PagingAlgorithms(IntBuffer pageBuffer) {
     this.pageBuffer = pageBuffer;
   }
 
+  public void setNumberOfFrames() {
+    System.out.println("How many physical frames? (1-8): ");
+    Scanner scanner = new Scanner(System.in);
+
+    this.numberOfFrames = Integer.parseInt(scanner.next());
+    this.currentPages = new Integer[numberOfFrames];
+  }
+
   public void fifo() {
 
+    setNumberOfFrames();
+
     // Create arrays for outputs
-    displayArray = new String[pageBuffer.capacity()][NUMBEROFFRAMES];
+    displayArray = new String[pageBuffer.capacity()][numberOfFrames];
     faultArray = new String[pageBuffer.capacity()];
     victimArray = new String[pageBuffer.capacity()];
 
     // initialize output arrays to empty spaces
     for (int i = 0; i < pageBuffer.capacity(); i++) {
-      for (int j = 0; j < NUMBEROFFRAMES; j++) {
+      for (int j = 0; j < numberOfFrames; j++) {
         displayArray[i][j] = " ";
       }
       faultArray[i] = " ";
@@ -41,7 +54,7 @@ public class PagingAlgorithms {
     }
 
     // Create queue for pages
-    ArrayBlockingQueue<Integer> fifoQueue = new ArrayBlockingQueue<>(NUMBEROFFRAMES);
+    ArrayBlockingQueue<Integer> fifoQueue = new ArrayBlockingQueue<>(numberOfFrames);
 
     int pageFaultIndex = -1;
 
@@ -62,7 +75,7 @@ public class PagingAlgorithms {
         pageFaults++;
 
         // if page queue is full
-        if (fifoQueue.size() == NUMBEROFFRAMES) {
+        if (fifoQueue.size() == numberOfFrames) {
 
           // victim page from queue
           Integer victim = fifoQueue.remove();
@@ -124,15 +137,15 @@ public class PagingAlgorithms {
   }
 
   public void optimum() {
-
+    setNumberOfFrames();
     // Create arrays for outputs
-    displayArray = new String[pageBuffer.capacity()][NUMBEROFFRAMES];
+    displayArray = new String[pageBuffer.capacity()][numberOfFrames];
     faultArray = new String[pageBuffer.capacity()];
     victimArray = new String[pageBuffer.capacity()];
 
     // initialize output arrays to empty spaces
     for (int i = 0; i < pageBuffer.capacity(); i++) {
-      for (int j = 0; j < NUMBEROFFRAMES; j++) {
+      for (int j = 0; j < numberOfFrames; j++) {
         displayArray[i][j] = " ";
       }
       faultArray[i] = " ";
@@ -143,14 +156,15 @@ public class PagingAlgorithms {
   }
 
   public void leastRecentlyUsed() {
+    setNumberOfFrames();
     // Create arrays for outputs
-    displayArray = new String[pageBuffer.capacity()][NUMBEROFFRAMES];
+    displayArray = new String[pageBuffer.capacity()][numberOfFrames];
     faultArray = new String[pageBuffer.capacity()];
     victimArray = new String[pageBuffer.capacity()];
 
     // initialize output arrays to empty spaces
     for (int i = 0; i < pageBuffer.capacity(); i++) {
-      for (int j = 0; j < NUMBEROFFRAMES; j++) {
+      for (int j = 0; j < numberOfFrames; j++) {
         displayArray[i][j] = " ";
       }
       faultArray[i] = " ";
@@ -193,7 +207,7 @@ public class PagingAlgorithms {
         pageFaults++;
 
         // if page queue is full
-        if (LRUQueue.size() == NUMBEROFFRAMES) {
+        if (LRUQueue.size() == numberOfFrames) {
 
           // victim page from queue
           Integer victim = LRUQueue.remove();
@@ -248,21 +262,22 @@ public class PagingAlgorithms {
   }
 
   public void leastFrequentlyUsed() {
+    setNumberOfFrames();
     // Create arrays for outputs
-    displayArray = new String[pageBuffer.capacity()][NUMBEROFFRAMES];
+    displayArray = new String[pageBuffer.capacity()][numberOfFrames];
     faultArray = new String[pageBuffer.capacity()];
     victimArray = new String[pageBuffer.capacity()];
 
     // initialize output arrays to empty spaces
     for (int i = 0; i < pageBuffer.capacity(); i++) {
-      for (int j = 0; j < NUMBEROFFRAMES; j++) {
+      for (int j = 0; j < numberOfFrames; j++) {
         displayArray[i][j] = " ";
       }
       faultArray[i] = " ";
       victimArray[i] = " ";
     }
 
-    HashSet<Integer> currentPageSet = new HashSet<>(NUMBEROFFRAMES);
+    LinkedList<Integer> currentPageAge = new LinkedList<>();
     // Initialize map to keep track of page use count
     int mapSize = 10;
     HashMap<Integer, Integer> pageCount = new HashMap<>(mapSize, 1);
@@ -274,11 +289,11 @@ public class PagingAlgorithms {
     // For each page in the reference string
     for (int i = 0; i < pageBuffer.capacity(); i++) {
       // Increase page frequency for each page when called
-      int previousCount = pageCount.get(i);
-      pageCount.replace(i, previousCount + 1);
+      int previousCount = pageCount.get(pageBuffer.get(i));
+      pageCount.replace(pageBuffer.get(i), previousCount + 1);
 
       // Check to see if new page matches any current pages
-      if (currentPageSet.contains(pageBuffer.get(i))) {
+      if (currentPageAge.contains(pageBuffer.get(i))) {
         // if page hit
         faultArray[i] = " "; // no page fault
         victimArray[i] = " "; // no victim page
@@ -288,9 +303,37 @@ public class PagingAlgorithms {
         faultArray[i] = "F";
         pageFaults++;
         // If all frames are full
-        if (currentPageSet.size() == NUMBEROFFRAMES) {
+        if (currentPageAge.size() == numberOfFrames) {
+          // find least frequently used frame
+          int lru = Integer.MAX_VALUE, value = Integer.MIN_VALUE;
 
+          int lruListPos = -1;
+          for (int j = 0; j < currentPageAge.size(); j++) {
+            int testPage = currentPageAge.get(j);
+            if (pageCount.get(testPage) < lru) {
+              lru = pageCount.get(testPage);
+              value = testPage;
+              lruListPos = j;
+            }
+          }
+          // Victim page to victim array
+          victimArray[i] = String.valueOf(value);
+
+          int pageFaultFrameNum = -1;
+          for (int j = 0; j < currentPages.length; j++) {
+            if (currentPages[j] == value) {
+              pageFaultFrameNum = j;
+            }
+          }
+          currentPageAge.remove(lruListPos);
+          currentPageAge.add(pageBuffer.get(i));
+
+          // Add new page vacated frame number
+          currentPages[pageFaultFrameNum] = pageBuffer.get(i);
         } else { // Frame not full
+          // add to hash set
+          currentPageAge.add(pageBuffer.get(i));
+          // place page in first free frame
           for (int j = 0; j < currentPages.length; j++) {
             if (currentPages[j] == null) {
               currentPages[j] = pageBuffer.get(i);
@@ -315,7 +358,6 @@ public class PagingAlgorithms {
     System.out.println("Hit ratio: " + hitRatio + " %");
   }
 
-
   private void printTable(String[][] displayArray, String[] faultArray, String[] victimArray) {
 
     for (int i = 0; i < 50; i++) {
@@ -334,7 +376,7 @@ public class PagingAlgorithms {
     }
     System.out.println();
 
-    for (int i = 0; i < NUMBEROFFRAMES; i++) {
+    for (int i = 0; i < numberOfFrames; i++) {
       System.out.print("Physical Frame " + i + "\t");
       for (int j = 0; j < pageBuffer.capacity(); j++) {
         if (Objects.equals(displayArray[j][i], "null")) {
