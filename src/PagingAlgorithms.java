@@ -166,6 +166,26 @@ public class PagingAlgorithms {
         // if all frame are full
         if (currentPageSet.size() == numberOfFrames) {
 
+          // find optimum page to replace, longest until next use
+          int victim = -1, farthest = i + 1;
+          for (int j = 0; j < currentPages.length; j++) {
+            for (int k = i; k < pageBuffer.capacity(); k++) {
+              if (currentPages[j] == pageBuffer.get(k)) {
+                if (k > farthest) {
+                  farthest = k;
+                  victim = j;
+                }
+              }
+            }
+          }
+          victimArray[i] = String.valueOf(victim);
+
+          // remove victim frame from fifo tracking list
+          currentPageSet.remove(victim);
+          currentPageSet.add(pageBuffer.get(i));
+
+          currentPages[victim] = pageBuffer.get(i);
+
         } else { // Frames not full
           currentPageSet.add(pageBuffer.get(i));
           // place page in first free frame
