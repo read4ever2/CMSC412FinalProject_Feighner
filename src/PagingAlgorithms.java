@@ -1,7 +1,5 @@
 import java.nio.IntBuffer;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
@@ -250,11 +248,73 @@ public class PagingAlgorithms {
   }
 
   public void leastFrequentlyUsed() {
-    System.out.println("Least Frequently Used");
+    // Create arrays for outputs
+    displayArray = new String[pageBuffer.capacity()][NUMBEROFFRAMES];
+    faultArray = new String[pageBuffer.capacity()];
+    victimArray = new String[pageBuffer.capacity()];
+
+    // initialize output arrays to empty spaces
     for (int i = 0; i < pageBuffer.capacity(); i++) {
-      System.out.print(pageBuffer.get(i) + " ");
+      for (int j = 0; j < NUMBEROFFRAMES; j++) {
+        displayArray[i][j] = " ";
+      }
+      faultArray[i] = " ";
+      victimArray[i] = " ";
     }
+
+    HashSet<Integer> currentPageSet = new HashSet<>(NUMBEROFFRAMES);
+    // Initialize map to keep track of page use count
+    int mapSize = 10;
+    HashMap<Integer, Integer> pageCount = new HashMap<>(mapSize, 1);
+
+    for (int i = 0; i < mapSize; i++) {
+      pageCount.put(i, 0);
+    }
+
+    // For each page in the reference string
+    for (int i = 0; i < pageBuffer.capacity(); i++) {
+      // Increase page frequency for each page when called
+      int previousCount = pageCount.get(i);
+      pageCount.replace(i, previousCount + 1);
+
+      // Check to see if new page matches any current pages
+      if (currentPageSet.contains(pageBuffer.get(i))) {
+        // if page hit
+        faultArray[i] = " "; // no page fault
+        victimArray[i] = " "; // no victim page
+        displayArray[i] = displayArray[i - 1]; // array of pages stays same as prior
+
+      } else { // Page Fault
+        faultArray[i] = "F";
+        pageFaults++;
+        // If all frames are full
+        if (currentPageSet.size() == NUMBEROFFRAMES) {
+
+        } else { // Frame not full
+          for (int j = 0; j < currentPages.length; j++) {
+            if (currentPages[j] == null) {
+              currentPages[j] = pageBuffer.get(i);
+              break;
+            }
+          }
+        }
+        // copy current page frames to display array
+        for (int j = 0; j < displayArray[i].length; j++) {
+          displayArray[i][j] = String.valueOf(currentPages[j]);
+        }
+      }
+      // Display output table
+      printTable(displayArray, faultArray, victimArray);
+      System.out.print("\nPress Enter key to continue");
+      Scanner scanner = new Scanner(System.in);
+      scanner.nextLine();
+    }
+    double hitRatio = (((double) (pageBuffer.capacity() - pageFaults) / (double) pageBuffer.capacity()) * 100);
+
+    System.out.println("Total Page Faults: " + pageFaults);
+    System.out.println("Hit ratio: " + hitRatio + " %");
   }
+
 
   private void printTable(String[][] displayArray, String[] faultArray, String[] victimArray) {
 
@@ -298,5 +358,4 @@ public class PagingAlgorithms {
     }
     System.out.println();
   }
-
 }
