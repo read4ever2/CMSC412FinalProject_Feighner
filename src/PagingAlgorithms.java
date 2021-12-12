@@ -34,21 +34,7 @@ public class PagingAlgorithms {
 
   public void fifo() {
 
-    setNumberOfFrames();
-
-    // Create arrays for outputs
-    displayArray = new String[pageBuffer.capacity()][numberOfFrames];
-    faultArray = new String[pageBuffer.capacity()];
-    victimArray = new String[pageBuffer.capacity()];
-
-    // initialize output arrays to empty spaces
-    for (int i = 0; i < pageBuffer.capacity(); i++) {
-      for (int j = 0; j < numberOfFrames; j++) {
-        displayArray[i][j] = " ";
-      }
-      faultArray[i] = " ";
-      victimArray[i] = " ";
-    }
+    initialize();
 
     // Create queue for pages
     ArrayBlockingQueue<Integer> fifoQueue = new ArrayBlockingQueue<>(numberOfFrames);
@@ -78,18 +64,7 @@ public class PagingAlgorithms {
           Integer victim = fifoQueue.remove();
 
           // find victim page frame number
-          for (int j = 0; j < currentPages.length; j++) {
-            if (currentPages[j].equals(victim)) {
-              pageFaultIndex = j;
-              break;
-            }
-          }
-
-          // Victim page to victim array
-          victimArray[i] = String.valueOf(victim);
-
-          // Add new page vacated frame number
-          currentPages[pageFaultIndex] = pageBuffer.get(i);
+          pageFaultIndex = getPageFaultIndex(pageFaultIndex, i, victim);
 
           // add page to end of queue
           try {
@@ -121,20 +96,37 @@ public class PagingAlgorithms {
       }
 
       // Display output table
-      printTable(displayArray, faultArray, victimArray);
+      printTable(displayArray, faultArray, victimArray, "First-in, First-out");
       System.out.print("\nPress Enter key to continue");
       Scanner scanner = new Scanner(System.in);
       scanner.nextLine();
     }
 
-    double hitRatio = (double) ((pageBuffer.capacity() - pageFaults) / pageBuffer.capacity()) * 100;
+    double hitRatio = (((double) (pageBuffer.capacity() - pageFaults) / (double) pageBuffer.capacity()) * 100);
 
     System.out.println("Total Page Faults: " + pageFaults);
     System.out.println("Hit ratio: " + hitRatio + " %");
   }
 
-  public void optimum() {
+  private int getPageFaultIndex(int pageFaultIndex, int i, Integer victim) {
+    for (int j = 0; j < currentPages.length; j++) {
+      if (currentPages[j].equals(victim)) {
+        pageFaultIndex = j;
+        break;
+      }
+    }
+
+    // Victim page to victim array
+    victimArray[i] = String.valueOf(victim);
+
+    // Add new page vacated frame number
+    currentPages[pageFaultIndex] = pageBuffer.get(i);
+    return pageFaultIndex;
+  }
+
+  private void initialize() {
     setNumberOfFrames();
+
     // Create arrays for outputs
     displayArray = new String[pageBuffer.capacity()][numberOfFrames];
     faultArray = new String[pageBuffer.capacity()];
@@ -148,6 +140,10 @@ public class PagingAlgorithms {
       faultArray[i] = " ";
       victimArray[i] = " ";
     }
+  }
+
+  public void optimum() {
+    initialize();
 
 
     HashSet<Integer> currentPageSet = new HashSet<>(numberOfFrames);
@@ -212,7 +208,7 @@ public class PagingAlgorithms {
 
       }
       // Display output table
-      printTable(displayArray, faultArray, victimArray);
+      printTable(displayArray, faultArray, victimArray, "Optimum");
       System.out.print("\nPress Enter key to continue");
       Scanner scanner = new Scanner(System.in);
       scanner.nextLine();
@@ -224,20 +220,7 @@ public class PagingAlgorithms {
   }
 
   public void leastRecentlyUsed() {
-    setNumberOfFrames();
-    // Create arrays for outputs
-    displayArray = new String[pageBuffer.capacity()][numberOfFrames];
-    faultArray = new String[pageBuffer.capacity()];
-    victimArray = new String[pageBuffer.capacity()];
-
-    // initialize output arrays to empty spaces
-    for (int i = 0; i < pageBuffer.capacity(); i++) {
-      for (int j = 0; j < numberOfFrames; j++) {
-        displayArray[i][j] = " ";
-      }
-      faultArray[i] = " ";
-      victimArray[i] = " ";
-    }
+    initialize();
 
     // Create queue for pages
     LinkedList<Integer> LRUQueue = new LinkedList<>();
@@ -281,18 +264,7 @@ public class PagingAlgorithms {
           Integer victim = LRUQueue.remove();
 
           // find victim page frame number
-          for (int j = 0; j < currentPages.length; j++) {
-            if (currentPages[j].equals(victim)) {
-              pageFaultIndex = j;
-              break;
-            }
-          }
-
-          // Victim page to victim array
-          victimArray[i] = String.valueOf(victim);
-
-          // Add new page vacated frame number
-          currentPages[pageFaultIndex] = pageBuffer.get(i);
+          pageFaultIndex = getPageFaultIndex(pageFaultIndex, i, victim);
 
           // add page to end of queue
           LRUQueue.add(pageBuffer.get(i));
@@ -317,7 +289,7 @@ public class PagingAlgorithms {
       }
 
       // Display output table
-      printTable(displayArray, faultArray, victimArray);
+      printTable(displayArray, faultArray, victimArray, "Least Recently Used");
       System.out.print("\nPress Enter key to continue");
       Scanner scanner = new Scanner(System.in);
       scanner.nextLine();
@@ -330,20 +302,7 @@ public class PagingAlgorithms {
   }
 
   public void leastFrequentlyUsed() {
-    setNumberOfFrames();
-    // Create arrays for outputs
-    displayArray = new String[pageBuffer.capacity()][numberOfFrames];
-    faultArray = new String[pageBuffer.capacity()];
-    victimArray = new String[pageBuffer.capacity()];
-
-    // initialize output arrays to empty spaces
-    for (int i = 0; i < pageBuffer.capacity(); i++) {
-      for (int j = 0; j < numberOfFrames; j++) {
-        displayArray[i][j] = " ";
-      }
-      faultArray[i] = " ";
-      victimArray[i] = " ";
-    }
+    initialize();
 
     // keep track of fifo order
     LinkedList<Integer> currentPageAge = new LinkedList<>();
@@ -418,7 +377,7 @@ public class PagingAlgorithms {
         }
       }
       // Display output table
-      printTable(displayArray, faultArray, victimArray);
+      printTable(displayArray, faultArray, victimArray, "Least Frequently Used");
       System.out.print("\nPress Enter key to continue");
       Scanner scanner = new Scanner(System.in);
       scanner.nextLine();
@@ -429,12 +388,13 @@ public class PagingAlgorithms {
     System.out.println("Hit ratio: " + hitRatio + " %");
   }
 
-  private void printTable(String[][] displayArray, String[] faultArray, String[] victimArray) {
+  private void printTable(String[][] displayArray, String[] faultArray, String[] victimArray, String label) {
 
     for (int i = 0; i < 50; i++) {
       System.out.println();
     }
 
+    System.out.println(label);
     System.out.print("Reference String\t");
     for (int i = 0; i < pageBuffer.capacity(); i++) {
       System.out.print(pageBuffer.get(i) + "\t");
