@@ -142,7 +142,7 @@ public class PagingAlgorithms {
     }
   }
 
-  public void optimum() {
+  public void optimal() {
     initialize();
 
 
@@ -178,6 +178,7 @@ public class PagingAlgorithms {
             }
             if (k == pageBuffer.capacity()) {
               victim = currentPages[j];
+              farthest = k;
               victimFrame = j;
             }
 
@@ -208,7 +209,7 @@ public class PagingAlgorithms {
 
       }
       // Display output table
-      printTable(displayArray, faultArray, victimArray, "Optimum");
+      printTable(displayArray, faultArray, victimArray, "Optimal");
       System.out.print("\nPress Enter key to continue");
       Scanner scanner = new Scanner(System.in);
       scanner.nextLine();

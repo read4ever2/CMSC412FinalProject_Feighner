@@ -26,7 +26,16 @@ public class Main {
     PagingAlgorithms pager;
 
     while (flag) {
-      System.out.println("\n*****************************************\n" + "\n" + "0 - Exit\n" + "1 – Read reference string\n" + "2 – Generate reference string\n" + "3 – Display current reference string\n" + "4 – Simulate FIFO\n" + "5 – Simulate OPT\n" + "6 – Simulate LRU\n" + "7 – Simulate LFU\n" + "Select Option:");
+      System.out.println("\n*****************************************\n" +
+                         "\n" + "0 - Exit\n" +
+                         "1 – Read reference string\n" +
+                         "2 – Generate reference string\n" +
+                         "3 – Display current reference string\n" +
+                         "4 – Simulate FIFO\n" +
+                         "5 – Simulate OPT\n" +
+                         "6 – Simulate LRU\n" +
+                         "7 – Simulate LFU\n" +
+                         "Select Option:");
 
       try {
         menuChoice = Integer.parseInt(scanner.next());
@@ -38,7 +47,7 @@ public class Main {
             flag = false;
             break;
           case 1:
-            System.out.println("1 entered. Enter numbers 0-9 seperated by a space: ");
+            System.out.println("1 entered. Enter numbers 0-9 separated by a space: ");
             readString();
             break;
           case 2:
@@ -65,7 +74,7 @@ public class Main {
             if (checkBuffer(pageBuffer)) break;
             System.out.println("5 entered. Simulating OPT");
             pager = new PagingAlgorithms(pageBuffer);
-            pager.optimum();
+            pager.optimal();
             break;
           case 6:
             if (checkBuffer(pageBuffer)) break;
@@ -108,7 +117,7 @@ public class Main {
     int[] pages = new int[strings.length];
     try {
       for (int i = 0; i < strings.length; i++) {
-        if ((Integer.parseInt(strings[i]) >= 0) || (Integer.parseInt(strings[i]) <= 9)) {
+        if ((Integer.parseInt(strings[i]) >= 0) && (Integer.parseInt(strings[i]) <= 9)) {
           pages[i] = Integer.parseInt(strings[i]);
         } else {
           throw new NumberFormatException();
